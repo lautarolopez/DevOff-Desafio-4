@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
+      crossorigin="anonymous"
+    />
+    <title>DevOff Challenge</title>
+  </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    .hidden {
+      display: none;
+    }
+    .container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    button {
+      border-radius: 10px;
+    }
+  </style>
+  <body>
+    <div class="container">
+      <h1>Chat HACHEUNO</h1>
+      <form class="name-form">
+        <input
+          class="my-3"
+          type="text"
+          name="nickname"
+          id="nickname"
+          required
+        />
+        <button class="btn my-3" type="submit">Entrar al chat</button>
+      </form>
+      <div class="chatroom hidden">
+        <ul class="chat-list"></ul>
+        <form class="chat-form">
+          <input
+            class="my-3"
+            type="text"
+            name="mnsj"
+            id="mnsj"
+            placeholder="Escribí tu mensaje..."
+            required
+          />
+          <button class="btn" type="submit">Enviar</button>
+        </form>
+      </div>
+    </div>
+    <script>
+      let ws = new WebSocket("ws://localhost:3000/ws");
+      const nameForm = document.querySelector(".name-form");
+      const chatroom = document.querySelector(".chatroom");
+      const chatList = document.querySelector(".chat-list");
+      const chatForm = document.querySelector(".chat-form");
+
+      let name = "anonimo";
+      nameForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        name = nameForm.nickname.value;
+        nameForm.classList.add("hidden");
+        chatroom.classList.remove("hidden");
+      });
+
+      chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        let mnsj = chatForm.mnsj.value;
+        ws.send(JSON.stringify({ name, mnsj }));
+        chatForm.mnsj.value = "";
+      });
+
+      const outputMessage = ({ data }) => {
+        const { name, mnsj } = JSON.parse(data);
+
+        let template = `<li> <span class="name"><strong>${name}:</strong></span> <span class="mnsj">${mnsj}</span> </li>`;
+        chatList.innerHTML += template;
+      };
+
+      ws.addEventListener("message", outputMessage);
+    </script>
+  </body>
+</html>
